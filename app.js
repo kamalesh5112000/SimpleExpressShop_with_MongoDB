@@ -4,9 +4,10 @@ const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const mongoose = require('mongoose');
+
 const errorController = require('./controllers/error');
 
-const mongoConnect=require('./util/database').mongoConnect;
 const User=require('./models/user');
 
 
@@ -28,9 +29,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 app.use((req,res,next)=>{
-    User.findByPk("6501556bc18ca7fad0391bb1")
+    User.findById("650e8fd830acafc534c88d99")
     .then(user=>{
-        req.user=new User(user.name,user.email,user.cart,user._id) ; 
+        req.user=user; 
         next();
     })
     .catch(err=>{
@@ -46,9 +47,25 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(()=>{
+mongoose.connect('mongodb+srv://kamalesh5112:Kamal2000@cluster0.7yk6gtm.mongodb.net/shop?retryWrites=true&w=majority').then(result=>{
+    console.log('Connected')
+    User.findOne().then(user=>{
+        if(!user){
+            const user=new User({
+                name:'Kamalesh',
+                email:'Kamalesh@gmail.com',
+                cart:{
+                    items:[]
+                }
+            });
+            user.save()
+        }
+    })
     
-    app.listen(3000)
+    app.listen(3000);
+}).catch(err=>{
+    console.log(err)
 })
+
 
 
